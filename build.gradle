@@ -47,4 +47,7 @@ dependencies {
     
     implementation 'com.google.android.filament:filament-android:1.32.0'
     implementation 'com.google.android.filament:gltfio-android:1.32.0'
+
+    // ML Kit Face Detection
+    implementation 'com.google.mlkit:face-detection:16.1.5'
 }
