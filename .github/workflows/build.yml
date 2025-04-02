@@ -1,0 +1,41 @@
+name: Build and Release APK
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4  # Upgraded to latest version for stability
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'   # Upgraded from JDK 17 to JDK 21 (LTS)
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for Gradle
+      run: chmod +x gradlew
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --no-daemon --parallel  # Optimized build flags
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: VTS-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Rename and Attach APK to Release
+      if: github.event_name == 'release'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cp app/build/outputs/apk/debug/app-debug.apk VTS.apk
+        gh release upload ${{ github.event.release.tag_name }} VTS.apk --clobber
