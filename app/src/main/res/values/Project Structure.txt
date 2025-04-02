@@ -1,0 +1,16 @@
+app/
+├── build.gradle
+└── src/
+    └── main/
+        ├── AndroidManifest.xml
+        ├── java/
+        │   └── com/
+        │       └── emmiofficial/
+        │           └── vts/
+        │               └── MainActivity.java
+        └── res/
+            ├── layout/
+            │   └── activity_main.xml
+            └── values/
+                ├── strings.xml
+                └── themes.xml
