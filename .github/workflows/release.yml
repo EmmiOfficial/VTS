@@ -1,7 +1,8 @@
-name: Release Build
+name: Build and Release APK
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,29 +17,24 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
+        cache: gradle
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-      env:
-        SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
 
-    - name: Upload Release Asset
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: VTS-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Rename and Attach APK to Release
+      if: github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release upload ${{ github.event.release.tag_name }} app/build/outputs/apk/release/app-release.apk#VTS.apk
-        
-    - name: Update Release Notes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo "Build completed at $(date -u +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
+        cp app/build/outputs/apk/debug/app-debug.apk VTS.apk
+        gh release upload ${{ github.event.release.tag_name }} VTS.apk --clobber
